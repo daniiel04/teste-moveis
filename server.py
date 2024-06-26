@@ -101,9 +101,10 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         parsed_path = urllib.parse.urlparse(self.path)
         query_params = urllib.parse.parse_qs(parsed_path.query)
 
-        if parsed_path.path == "/":  # Servir index.html para o caminho raiz
+        if parsed_path.path == "/":
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
+            self.send_header('Content-Security-Policy', "script-src 'self' 'unsafe-eval';")
             self.end_headers()
             with open('index.html', 'rb') as f:
                 self.wfile.write(f.read())
@@ -132,6 +133,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Disposition', 'attachment; filename="dados_imoveis.xlsx"')
             self.send_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            self.send_header('Content-Security-Policy', "script-src 'self' 'unsafe-eval';")
             self.end_headers()
             self.wfile.write(excel_data.getvalue())
 
