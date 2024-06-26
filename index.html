@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download de dados do Imovirtual</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #444;
+        }
+        input[type="text"], input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .progress {
+            color: #f0ad4e; /* Amarelo para in-progress */
+        }
+        .success {
+            color: #5cb85c; /* Verde para sucesso */
+        }
+        .error {
+            color: #d9534f; /* Vermelho para erro */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Download de dados do Imovirtual</h1>
+        <input type="text" id="urlInput" placeholder="Digite a URL do Imovirtual" />
+        <input type="password" id="passwordInput" placeholder="Digite a senha para acessar" />
+        <button onclick="handleDownload()">Download</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function handleDownload() {
+            var urlValue = document.getElementById('urlInput').value.trim();
+            var passwordValue = document.getElementById('passwordInput').value.trim();
+            var resultElement = document.getElementById('result');
+
+            // Limpar mensagem anterior
+            resultElement.innerHTML = '';
+
+            // Verificar se ambos os campos estão vazios
+            if (urlValue === '' && passwordValue === '') {
+                resultElement.innerHTML = 'Por favor, insira a URL de busca e a senha.';
+                resultElement.classList.add('error');
+                return;
+            }
+
+            // Verificar se apenas a senha foi preenchida
+            if (urlValue === '' && passwordValue !== '') {
+                resultElement.innerHTML = 'Por favor, insira a URL do Imovirtual.';
+                resultElement.classList.add('error');
+                return;
+            }
+
+            // Verificar se apenas a URL foi preenchida
+            if (urlValue !== '' && passwordValue === '') {
+                resultElement.innerHTML = 'Por favor, insira a senha para acessar.';
+                resultElement.classList.add('error');
+                return;
+            }
+
+            // Iniciar mensagem de progresso
+            resultElement.innerHTML = 'Download em andamento, isto pode levar alguns minutos...';
+            resultElement.classList.remove('success');
+            resultElement.classList.remove('error');
+            resultElement.classList.add('progress');
+
+            // Verificar se o URL é do Imovirtual
+            if (!urlValue.startsWith('https://www.imovirtual.com/')) {
+                resultElement.innerHTML = 'URL inválida. Por favor, forneça uma URL do Imovirtual.';
+                resultElement.classList.remove('progress');
+                resultElement.classList.add('error');
+                return;
+            }
+
+            // Enviar requisição para o servidor para download
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', `/download?url=${encodeURIComponent(urlValue)}&password=${encodeURIComponent(passwordValue)}`, true);
+            xhr.responseType = 'blob';
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var blob = xhr.response;
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'dados_imoveis.xlsx';
+                    link.click();
+                    resultElement.innerHTML = 'Download concluído!';
+                    resultElement.classList.remove('progress');
+                    resultElement.classList.add('success');
+                } else if (xhr.status === 401) {
+                    resultElement.innerHTML = 'Senha incorreta. Tente novamente.';
+                    resultElement.classList.remove('progress');
+                    resultElement.classList.add('error');
+                } else {
+                    resultElement.innerHTML = 'Erro ao processar sua solicitação.';
+                    resultElement.classList.remove('progress');
+                    resultElement.classList.add('error');
+                }
+            };
+
+            xhr.onerror = function() {
+                resultElement.innerHTML = 'Erro ao conectar com o servidor.';
+                resultElement.classList.remove('progress');
+                resultElement.classList.add('error');
+            };
+
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
